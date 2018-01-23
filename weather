@@ -1,0 +1,40 @@
+#!/usr/bin/python
+
+import re
+import json
+import requests
+import sys
+import argparse
+
+url_location='https://ipinfo.io'
+weather_url='http://api.openweathermap.org/data/2.5/weather'
+
+parser = argparse.ArgumentParser(description='This command provides few informations about weather in your location')
+parser.add_argument('key', help='API key required from Openweathermap.org')
+
+args = parser.parse_args()
+#api_key = '40a4d65f06047f7babb3dc3bc3c9fd32' 
+api_key = args.key
+
+def get_location():
+    try:
+        r = requests.get(url_location)
+    except requests.exceptions.ConnectionError as err:
+        print('Unable to connect to %s' % url_location)
+        sys.exit(1)
+    else:
+        return {'postal': r.json()['postal'], 'country': r.json()['country']}
+
+def get_weather(location):
+    try:    
+        r = requests.get("%s?zip=%s,%s&units=metric&APPID=%s" % (weather_url,location['postal'],location['country'].lower(),api_key))
+    except:
+       print('Unable to connect to API')
+       sys.exit(1)
+    else:
+        temp = r.json()['main']['temp']
+        humidity = r.json()['main']['humidity']
+        city = r.json()['name']
+        print('You are located near %s, and temperature is %s C with %s percent humidity' % (city, temp, humidity))
+
+get_weather(get_location())
