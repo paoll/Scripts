@@ -3,15 +3,16 @@
 import requests
 import json
 import argparse
+import sys
 
 parser = argparse.ArgumentParser(description='Python program to export wallabag articles')
 parser.add_argument('url',help='URL of wallabag')
-parser.add_argument('client_id',help='')
-parser.add_argument('client_secret',help='')
-parser.add_argument('username','-u',help='Username of the account')
-parser.add_argument('password','-p',help='Password of the account')
+parser.add_argument('client_id',help='Client id generated on wallabag page')
+parser.add_argument('client_secret',help='Client Secret generated on wallabag')
+parser.add_argument('username',help='Username of the account')
+parser.add_argument('password',help='Password of the account')
 
-args = parser.args_parse()
+args = parser.parse_args()
 url = args.url
 client_id = args.client_id
 client_secret = args.client_secret
@@ -19,4 +20,21 @@ username = args.username
 password = args.password
 
 def get_token(url,client_id,client_secret,username,password):
-    r = requests.get('
+    try:
+        r = requests.get('https://%s/oauth/v2/token?grant_type=password&client_id=%s&client_secret=%s&username=%s&password=%s' % (url,client_id,client_secret,username,password))
+    except requests.exceptions.ConnectionError as err:
+        print('Unable to connect on %s' % url)
+        sys.exit(1)
+    else:
+        #print('Token requested successfully: %s' % (r.json()['access_token']))
+        return r.json()['access_token']
+
+def export(url,access_token):
+    r = requests.get('https://%s/api/entries.json?access_token=%s' % (url,access_token))
+    #print(json.dumps(r.json()['_embedded']['items'][0]['url'], indent=4, sort_keys=True))
+    print(type(item) for item in r.json()['_embedded']['items'])
+
+access_token = get_token(url,client_id,client_secret,username,password)
+export(url,access_token)
+
+
