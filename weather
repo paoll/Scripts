@@ -13,7 +13,6 @@ parser = argparse.ArgumentParser(description='This command provides few informat
 parser.add_argument('key', help='API key required from Openweathermap.org')
 
 args = parser.parse_args()
-#api_key = '40a4d65f06047f7babb3dc3bc3c9fd32' 
 api_key = args.key
 
 def get_location():
